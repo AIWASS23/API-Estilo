@@ -3,11 +3,12 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
 from app.models.client import Client
+from app.models.user import User
 from app.schemas.clients.client_base import ClientCreate, ClientOut
 from app.schemas.clients.client_update import ClientUpdate
+from app.services.user_service import get_current_user, admin_required
 
 client_router = APIRouter(prefix="/clients", tags=["Clients"])
-
 
 @client_router.get("/", response_model=List[ClientOut])
 def list_clients(

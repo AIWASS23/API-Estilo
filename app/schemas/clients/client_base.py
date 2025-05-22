@@ -4,7 +4,7 @@ from pydantic import BaseModel, EmailStr, constr
 class ClientBase(BaseModel):
     name: str
     email: EmailStr
-    cpf: constr(min_length=11, max_length=11)
+    cpf: constr(min_length=11, max_length=11, pattern=r'^\d{11}$')
 
 
 class ClientCreate(ClientBase):
@@ -17,6 +17,4 @@ class ClientOut(ClientBase):
     class Config:
         orm_mode = True
 
-# Cliente nao funcionou
-# rodar psql no terminal
 

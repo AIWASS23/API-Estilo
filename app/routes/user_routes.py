@@ -11,14 +11,17 @@ from jose import JWTError, jwt
 
 user_router = APIRouter(prefix="/auth", tags=["Auth"])
 
+
 @user_router.post("/register", response_model=dict)
 def register(data: Register, db: Session = Depends(get_db)):
     user = register_user(db, data)
     return {"message": f"Usuário {user.email} criado com sucesso."}
 
+
 @user_router.post("/login", response_model=Token)
 def login(data: UserLogin, db: Session = Depends(get_db)):
     return login_user(db, data)
+
 
 @user_router.post("/refresh-token", response_model=Token)
 def refresh_token(refresh_token: str):
