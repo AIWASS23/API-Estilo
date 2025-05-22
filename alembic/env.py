@@ -5,6 +5,7 @@ from app.config import settings
 from app.database import Base
 from app.models.user import User
 from app.models.client import Client
+from app.models.product import Product
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
