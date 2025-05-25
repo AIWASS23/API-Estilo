@@ -10,11 +10,18 @@ from app.models.order import Order, OrderItem
 from sqlalchemy import engine_from_config, pool
 from alembic import context
 
+# local
+# sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# config = context.config
+# config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+# Docker
+DATABASE_URL = (
+    f"postgresql://{os.environ.get('DB_USER')}:{os.environ.get('DB_PASSWORD')}"
+    f"@{os.environ.get('DB_HOST')}:{os.environ.get('DB_PORT')}/{os.environ.get('DB_NAME')}"
+)
 config = context.config
-
-config.set_main_option("sqlalchemy.url", settings.DATABASE_URL)
+config.set_main_option("sqlalchemy.url", DATABASE_URL)
 
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
