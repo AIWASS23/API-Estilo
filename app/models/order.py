@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, DateTime, ForeignKey, Enum
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, UTC
 from app.database import Base
 import enum
 
@@ -18,7 +18,7 @@ class Order(Base):
     id = Column(Integer, primary_key=True, index=True)
     client = Column(String, nullable=False)
     status = Column(Enum(OrderStatus), default=OrderStatus.pending)
-    created_at = Column(DateTime, default=datetime.utcnow)
+    created_at = Column(DateTime, default=datetime.now(UTC))
 
     items = relationship("OrderItem", back_populates="order")
 

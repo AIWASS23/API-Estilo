@@ -1,8 +1,7 @@
 from sqlalchemy.orm import Session
 from app.utils import utils
-from app.models.user import User
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
+from fastapi.security import OAuth2PasswordBearer
 from jose import jwt, JWTError
 from app.database import get_db
 from app.models.user import User

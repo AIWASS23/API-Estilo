@@ -7,7 +7,7 @@ from typing import List, Optional
 from app.database import get_db
 from app.models.product import Product
 from app.models.user import User
-from app.schemas.products.product_base import ProductCreate, ProductOut
+from app.schemas.products.product_base import ProductOut
 from app.schemas.products.product_update import ProductUpdate
 from app.services.service import get_current_user, admin_required
 
