@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, conint
 from typing import List
 
 
 class OrderItemCreate(BaseModel):
     product_id: int
-    quantity: int
+    quantity: conint(gt=0)
 
 
 class OrderCreate(BaseModel):
