@@ -6,21 +6,24 @@ from sqlalchemy.orm import Session
 from typing import List, Optional
 from app.database import get_db
 from app.models.product import Product
+from app.models.user import User
 from app.schemas.products.product_base import ProductCreate, ProductOut
 from app.schemas.products.product_update import ProductUpdate
+from app.services.service import get_current_user, admin_required
 
 product_router = APIRouter(prefix="/products", tags=["Products"])
 
 
 @product_router.get("/", response_model=List[ProductOut])
 def list_products(
-    db: Session = Depends(get_db),
-    skip: int = 0,
-    limit: int = 10,
-    section: Optional[str] = None,
-    available: Optional[bool] = None,
-    min_price: Optional[float] = None,
-    max_price: Optional[float] = None,
+        db: Session = Depends(get_db),
+        skip: int = 0,
+        limit: int = 10,
+        section: Optional[str] = None,
+        available: Optional[bool] = None,
+        min_price: Optional[float] = None,
+        max_price: Optional[float] = None,
+        current_user: User = Depends(get_current_user)
 ):
     query = db.query(Product)
     if section:
@@ -37,14 +40,15 @@ def list_products(
 
 @product_router.post("/", response_model=ProductOut)
 def create_product(
-    description: str = Form(..., example="Tênis Esportivo"),
-    price: float = Form(..., example=199.99),
-    barcode: str = Form(..., example="7896543219870"),
-    section: str = Form(..., example="Calçados"),
-    stock: int = Form(..., example=50),
-    valid_until: str = Form(None, example="2025-12-31"),
-    image: UploadFile = File(None),
-    db: Session = Depends(get_db)
+        description: str = Form(..., example="Tênis Esportivo"),
+        price: float = Form(..., example=199.99),
+        barcode: str = Form(..., example="7896543219870"),
+        section: str = Form(..., example="Calçados"),
+        stock: int = Form(..., example=50),
+        valid_until: str = Form(None, example="2025-12-31"),
+        image: UploadFile = File(None),
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
 
 ):
     if db.query(Product).filter_by(barcode=barcode).first():
@@ -77,7 +81,11 @@ def create_product(
 
 
 @product_router.get("/{id}", response_model=ProductOut)
-def get_product(id: int, db: Session = Depends(get_db)):
+def get_product(
+        id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(get_current_user)
+):
     product = db.query(Product).get(id)
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
@@ -85,7 +93,11 @@ def get_product(id: int, db: Session = Depends(get_db)):
 
 
 @product_router.put("/{id}", response_model=ProductOut)
-def update_product(id: int, updates: ProductUpdate, db: Session = Depends(get_db)):
+def update_product(
+        id: int, updates:
+        ProductUpdate, db: Session = Depends(get_db),
+        current_user: User = Depends(admin_required)
+):
     product = db.query(Product).get(id)
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")
@@ -99,7 +111,11 @@ def update_product(id: int, updates: ProductUpdate, db: Session = Depends(get_db
 
 
 @product_router.delete("/{id}")
-def delete_product(id: int, db: Session = Depends(get_db)):
+def delete_product(
+        id: int,
+        db: Session = Depends(get_db),
+        current_user: User = Depends(admin_required)
+):
     product = db.query(Product).get(id)
     if not product:
         raise HTTPException(status_code=404, detail="Produto não encontrado.")

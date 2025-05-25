@@ -1,14 +1,15 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 from typing import List, Optional
-from datetime import datetime
 from app.database import get_db
 from app.models.order import Order, OrderItem, OrderStatus
 from app.models.product import Product
 from app.schemas.orders.order import OrderOut, OrderUpdate
 from app.schemas.orders.order_item import OrderCreate
+from app.models.user import User
+from app.services.service import get_current_user, admin_required
 
-order_router = APIRouter(prefix="/orders", tags=["orders"])
+order_router = APIRouter(prefix="/orders", tags=["Orders"])
 
 
 @order_router.get("/", response_model=List[OrderOut])
@@ -20,6 +21,7 @@ def list_orders(
     id_order: Optional[int] = Query(None),
     status: Optional[OrderStatus] = Query(None),
     client: Optional[str] = Query(None),
+    current_user: User = Depends(get_current_user)
 ):
     query = db.query(Order)
 
@@ -37,7 +39,11 @@ def list_orders(
 
 
 @order_router.post("/", response_model=OrderOut)
-def create_order(order: OrderCreate, db: Session = Depends(get_db)):
+def create_order(
+    order: OrderCreate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     new_order = Order(client=order.client)
 
     for item in order.items:
@@ -57,7 +63,11 @@ def create_order(order: OrderCreate, db: Session = Depends(get_db)):
 
 
 @order_router.get("/{id}", response_model=OrderOut)
-def get_order(id: int, db: Session = Depends(get_db)):
+def get_order(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(get_current_user)
+):
     order = db.query(Order).filter(Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
@@ -65,7 +75,12 @@ def get_order(id: int, db: Session = Depends(get_db)):
 
 
 @order_router.put("/{id}", response_model=OrderOut)
-def update_order(id: int, update_data: OrderUpdate, db: Session = Depends(get_db)):
+def update_order(
+    id: int,
+    update_data: OrderUpdate,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(admin_required)
+):
     order = db.query(Order).filter(Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")
@@ -77,7 +92,11 @@ def update_order(id: int, update_data: OrderUpdate, db: Session = Depends(get_db
 
 
 @order_router.delete("/{id}")
-def delete_order(id: int, db: Session = Depends(get_db)):
+def delete_order(
+    id: int,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(admin_required)
+):
     order = db.query(Order).filter(Order.id == id).first()
     if not order:
         raise HTTPException(status_code=404, detail="Pedido não encontrado.")

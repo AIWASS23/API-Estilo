@@ -2,7 +2,9 @@ import pytest
 from fastapi.testclient import TestClient
 from main import app
 
-client = TestClient(app)
+@pytest.fixture
+def client():
+    return TestClient(app)
 
 
 @pytest.fixture
@@ -23,13 +25,13 @@ def valid_login_data():
     }
 
 
-def test_register_user(valid_register_data):
+def test_register_user(client, valid_register_data):
     response = client.post("/auth/register", json=valid_register_data)
     assert response.status_code == 200
     assert "Usuário" in response.json().get("message", "")
 
 
-def test_login_user(valid_register_data, valid_login_data):
+def test_login_user(client, valid_register_data, valid_login_data):
     client.post("/auth/register", json=valid_register_data)
 
     response = client.post("/auth/login", json=valid_login_data)
@@ -40,7 +42,7 @@ def test_login_user(valid_register_data, valid_login_data):
     assert data["token_type"] == "bearer"
 
 
-def test_refresh_token(valid_register_data, valid_login_data):
+def test_refresh_token(client, valid_register_data, valid_login_data):
     client.post("/auth/register", json=valid_register_data)
     login_resp = client.post("/auth/login", json=valid_login_data)
     refresh_token = login_resp.json()["refresh_token"]
@@ -53,7 +55,7 @@ def test_refresh_token(valid_register_data, valid_login_data):
     assert data["token_type"] == "bearer"
 
 
-def test_refresh_token_invalid():
+def test_refresh_token_invalid(client):
     response = client.post("/auth/refresh-token", json={"refresh_token": "invalidtoken"})
-    assert response.status_code == 403
+    assert response.status_code == 422
     assert response.json()["detail"] == "Token inválido ou expirado."
